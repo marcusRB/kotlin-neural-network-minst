@@ -1,5 +1,6 @@
 package com.github.winteryoung.mltest
 
+import org.apache.commons.math3.distribution.NormalDistribution
 import org.apache.commons.math3.linear.RealVector
 import java.util.*
 
@@ -8,19 +9,25 @@ import java.util.*
  * @since 2015/12/19
  */
 class NeuralNetwork(layerSizes: List<Int>) {
-    private val biases: List<BiasVector>
-    private val weights: List<WeightMatrix>
+    private var weights: List<WeightMatrix>
+    private var biases: List<BiasVector>
 
     init {
         biases = layerSizes.subList(1, layerSizes.size).map { width ->
-            BiasVector(width)
+            val nd = NormalDistribution()
+            BiasVector(width) {
+                nd.sample()
+            }
         }
         weights = run {
             val leftLayerSizes = layerSizes.subList(0, layerSizes.size - 1)
             val rightLayerSizes = layerSizes.subList(1, layerSizes.size)
             leftLayerSizes.zip(rightLayerSizes).map {
                 val (width, height) = it
-                WeightMatrix(height, width)
+                val nd = NormalDistribution()
+                WeightMatrix(height, width) {
+                    nd.sample()
+                }
             }
         }
     }
@@ -47,7 +54,7 @@ class NeuralNetwork(layerSizes: List<Int>) {
     }
 
     private fun miniBatchGradientDescent(
-            trainingData: MutableList<Pair<Double, Double>>,
+            trainingData: MutableList<LabeledData>,
             epochs: Int,
             miniBatchSize: Int,
             learningRate: Double,
@@ -73,6 +80,38 @@ class NeuralNetwork(layerSizes: List<Int>) {
         return 0.0
     }
 
-    private fun updateMiniBatch(batch: List<Pair<Double, Double>>, learningRate: Double) {
+    private fun updateMiniBatch(batch: List<LabeledData>, learningRate: Double) {
+        val weightDecsOfBatch = weights.map { it.zero() }
+        val biasDecsOfBatch = biases.map { it.zero() }
+        for (labeledData in batch) {
+            val (weightDecs, biasDecs) = backPropagate(labeledData)
+            for ((wdb, wd) in weightDecsOfBatch.zip(weightDecs)) {
+                wdb.matrix = wdb.matrix.add(wd.matrix)
+            }
+            for ((bdb, bd) in biasDecsOfBatch.zip(biasDecs)) {
+                bdb.matrix = bdb.matrix.add(bd.matrix)
+            }
+        }
+
+        val learningRateOfBatch = learningRate / batch.size
+        weights = ArrayList<WeightMatrix>().apply {
+            for ((w, wd) in weights.zip(weightDecsOfBatch)) {
+                w.matrix = w.matrix.subtract(wd.matrix.scalarMultiply(learningRateOfBatch))
+            }
+        }
+        biases = ArrayList<BiasVector>().apply {
+            for ((b, bd) in biases.zip(biasDecsOfBatch)) {
+                b.matrix = b.matrix.subtract(bd.matrix.scalarMultiply(learningRateOfBatch))
+            }
+        }
     }
+
+    private fun backPropagate(labeledData: LabeledData): Gradient {
+        throw Exception()
+    }
+
+    private data class Gradient(
+            val weightDecs: List<WeightMatrix>,
+            val biasDecs: List<BiasVector>
+    )
 }

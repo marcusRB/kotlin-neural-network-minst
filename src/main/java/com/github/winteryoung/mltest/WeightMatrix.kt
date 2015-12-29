@@ -1,6 +1,5 @@
 package com.github.winteryoung.mltest
 
-import org.apache.commons.math3.distribution.NormalDistribution
 import org.apache.commons.math3.linear.MatrixUtils
 import org.apache.commons.math3.linear.RealMatrix
 import org.apache.commons.math3.linear.RealVector
@@ -11,25 +10,27 @@ import org.apache.commons.math3.linear.RealVector
  */
 class WeightMatrix(
         val height: Int,
-        val width: Int
+        val width: Int,
+        valueInitializer: () -> Double = { 0.0 }
 ) {
-    private val weight: RealMatrix
+    var matrix: RealMatrix
 
     init {
-        val nd = NormalDistribution()
         val m = Array(height) {
             Array(width) {
-                nd.sample()
+                valueInitializer()
             }.toDoubleArray()
         }
-        weight = MatrixUtils.createRealMatrix(m)
+        matrix = MatrixUtils.createRealMatrix(m)
     }
 
     override fun toString(): String {
-        return weight.toString()
+        return matrix.toString()
     }
 
     fun multiply(vec: RealVector): RealVector {
-        return weight.multiply(vec.toRealMatrix()).getColumnVector(0)
+        return matrix.multiply(vec.toRealMatrix()).getColumnVector(0)
     }
+
+    fun zero() = WeightMatrix(height, width)
 }

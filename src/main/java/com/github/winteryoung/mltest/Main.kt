@@ -8,6 +8,6 @@ fun main(args: Array<String>) {
     val trainingData = readMnistTrainingData(mnistFolder)
     val testData = readMnistTestData(mnistFolder)
 
-    showImage(testData[0].image)
+    showImage(testData[0].data.toBufferedImage())
 }
 

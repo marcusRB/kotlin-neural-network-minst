@@ -1,6 +1,5 @@
 package com.github.winteryoung.mltest
 
-import org.apache.commons.math3.distribution.NormalDistribution
 import org.apache.commons.math3.linear.MatrixUtils
 import org.apache.commons.math3.linear.RealMatrix
 import org.apache.commons.math3.linear.RealVector
@@ -9,18 +8,18 @@ import org.apache.commons.math3.linear.RealVector
  * @author Winter Young
  * @since 2015/12/27
  */
-data class BiasVector(
-        val size: Int
+class BiasVector(
+        val size: Int,
+        valueInitializer: () -> Double = { 0.0 }
 ) {
-    val matrix: RealMatrix
+    var matrix: RealMatrix
     val vector: RealVector
         get() = matrix.getColumnVector(0)
 
     init {
-        val nd = NormalDistribution()
         val m = Array(size) {
             Array(1) {
-                nd.sample()
+                valueInitializer()
             }.toDoubleArray()
         }
         matrix = MatrixUtils.createRealMatrix(m)
@@ -29,4 +28,6 @@ data class BiasVector(
     override fun toString(): String {
         return matrix.toString()
     }
+
+    fun zero() = BiasVector(size)
 }

@@ -12,7 +12,7 @@ import java.util.*
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
 
-fun readMnistImageFile(path: String): List<BufferedImage> {
+fun readMnistImageFile(path: String): List<Image> {
     FileInputStream(path).buffered().use { inputStream ->
         val dis = DataInputStream(inputStream)
         dis.readInt().run {
@@ -29,16 +29,16 @@ fun readMnistImageFile(path: String): List<BufferedImage> {
             Color(it, it, it).rgb
         }
 
-        return ArrayList<BufferedImage>().apply {
+        return ArrayList<Image>().apply {
             for (i in 1..imageNumber) {
-                val img = BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB)
+                val data = IntArray(imageWidth * imageHeight)
                 for (h in 0..imageHeight - 1) {
                     for (w in 0..imageWidth - 1) {
                         val rgb = genRgb(dis.readUnsignedByte())
-                        img.setRGB(w, h, rgb)
+                        data[h * imageWidth + w] = rgb
                     }
                 }
-                add(img)
+                add(Image(imageWidth, imageHeight, data))
             }
         }
     }
