@@ -15,3 +15,5 @@ fun RealVector.toRealMatrix(): RealMatrix {
     }
     return MatrixUtils.createRealMatrix(ar)
 }
+
+fun RealMatrix.multiply(vec: RealVector): RealVector = this.multiply(vec.toRealMatrix()).getColumnVector(0)

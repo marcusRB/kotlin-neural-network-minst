@@ -2,7 +2,6 @@ package com.github.winteryoung.mltest
 
 import org.apache.commons.math3.linear.MatrixUtils
 import org.apache.commons.math3.linear.RealMatrix
-import org.apache.commons.math3.linear.RealVector
 
 /**
  * @author Winter Young
@@ -26,10 +25,6 @@ class WeightMatrix(
 
     override fun toString(): String {
         return matrix.toString()
-    }
-
-    fun multiply(vec: RealVector): RealVector {
-        return matrix.multiply(vec.toRealMatrix()).getColumnVector(0)
     }
 
     fun zero() = WeightMatrix(height, width)

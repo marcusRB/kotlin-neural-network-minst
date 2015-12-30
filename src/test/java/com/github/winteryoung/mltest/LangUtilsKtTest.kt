@@ -16,4 +16,13 @@ class LangUtilsKtTest {
         Assert.assertEquals(listOf(1, 2, 3), batches[0])
         Assert.assertEquals(listOf(10), batches[3])
     }
+
+    @Test
+    fun testGetx() {
+        val list = listOf(*Array(10) { it + 1 })
+        Assert.assertEquals(10, list.getx(-1))
+        Assert.assertEquals(1, list.getx(-list.size))
+        Assert.assertEquals(1, list.getx(0))
+        Assert.assertEquals(2, list.getx(-list.size + 1))
+    }
 }

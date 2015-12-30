@@ -18,3 +18,21 @@ fun <T> Collection<T>.split(batchSize: Int): List<List<T>> {
     }
     return result;
 }
+
+fun <T> List<T>.getx(index: Int): T {
+    val i = xindex(index)
+    return this[i]
+}
+
+private fun <T> List<T>.xindex(index: Int): Int {
+    val i = if (index < 0) {
+        this.size + index
+    } else {
+        index
+    }
+    return i
+}
+
+fun <T> MutableList<T>.setx(index: Int, value: T) {
+    this[xindex(index)] = value
+}

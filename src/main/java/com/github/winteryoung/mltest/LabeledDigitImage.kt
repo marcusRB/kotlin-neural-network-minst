@@ -12,7 +12,9 @@ data class LabeledDigitImage(
 ) {
     fun toLabeledData(): LabeledData {
         val dataVec = ArrayRealVector(data.data.map { it.toDouble() }.toTypedArray())
-        val labelVec = ArrayRealVector(doubleArrayOf( label.toDouble() ))
+        val labelVec = ArrayRealVector(Array(10) {
+            if (label == it.toByte()) 1.0 else 0.0
+        })
         return LabeledData(dataVec, labelVec)
     }
 }
