@@ -13,6 +13,10 @@ class NeuralNetwork(layerSizes: List<Int>) {
     private var biases: List<BiasVector>
 
     init {
+        if (layerSizes.size < 3) {
+            throw IllegalArgumentException("At least 3 layers are required")
+        }
+
         biases = layerSizes.subList(1, layerSizes.size).map { width ->
             val nd = NormalDistribution()
             BiasVector(width) {
@@ -35,15 +39,6 @@ class NeuralNetwork(layerSizes: List<Int>) {
     override fun toString(): String {
         return "biases =\n${biases.joinToString("\n")}\n" +
                 "weights =\n${weights.joinToString("\n")}"
-    }
-
-    private fun feedForward(inputs: RealVector): RealVector {
-        var vec = inputs
-        for ((bias, weight) in biases.zip(weights)) {
-            val weightedInput = weight.multiply(vec).add(bias.vector)
-            vec = sigmoid(weightedInput)
-        }
-        return vec
     }
 
     private fun sigmoid(z: RealVector): RealVector {
@@ -107,7 +102,44 @@ class NeuralNetwork(layerSizes: List<Int>) {
     }
 
     private fun backPropagate(labeledData: LabeledData): Gradient {
-        throw Exception()
+        val (input, actual) = labeledData
+
+        fun feedForward(): List<List<RealVector>> {
+            val activations = ArrayList<RealVector>().apply { add(input) }
+            val weightedInputs = ArrayList<RealVector>()
+            var activation = input
+            for ((weight, bias) in weights.zip(biases)) {
+                val weightedInput = weight.multiply(activation).add(bias.vector)
+                weightedInputs.add(weightedInput)
+                activation = activate(weightedInput)
+                activations.add(activation)
+            }
+            return listOf(activations, weightedInputs)
+        }
+
+        val (activations, weightedInputs) = feedForward()
+
+        val weightDecs = weights.map { it.zero() }
+        val biasDecs = biases.map { it.zero() }
+        val error = run {
+            val activationDerivative = activateDerivative(weightedInputs.last())
+            val costDerivative = costDerivative(activations.last(), actual)
+            costDerivative.ebeMultiply(activationDerivative)
+        }
+        weightDecs[weightDecs.size - 1].matrix = error.outerProduct(activations[activations.size - 2])
+        biasDecs[biasDecs.size - 1].matrix = error.toRealMatrix()
+
+        return Gradient(weightDecs, biasDecs)
+    }
+
+    private fun costDerivative(activation: RealVector, actual: RealVector): RealVector {
+        throw UnsupportedOperationException("not implemented")
+    }
+
+    fun activate(weightedInput: RealVector) = sigmoid(weightedInput)
+
+    private fun activateDerivative(weightedInput: RealVector): RealVector {
+        throw UnsupportedOperationException("not implemented")
     }
 
     private data class Gradient(
