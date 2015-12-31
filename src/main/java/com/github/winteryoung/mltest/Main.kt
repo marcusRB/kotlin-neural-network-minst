@@ -8,7 +8,7 @@ fun main(args: Array<String>) {
     val testData = readMnistTestData(mnistFolder)
 
     val nn = NeuralNetwork(layerSizes = listOf(784, 30, 10), learningRate = 3.0)
-    nn.train(trainingData.map { it.toLabeledData() }.toArrayList(), epochs = 10, miniBatchSize = 10)
+    nn.train(trainingData.map { it.toLabeledData() }.toArrayList(), epochs = 3, miniBatchSize = 10)
     println("nn: $nn")
 
     val failures = ArrayList<Pair<LabeledDigitImage, Byte>>()

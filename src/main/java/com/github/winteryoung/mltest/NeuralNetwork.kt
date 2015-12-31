@@ -99,16 +99,22 @@ class NeuralNetwork(
         }
 
         val weightDecs = weights.map { it.zero() }
-        weightDecs.getx(-1).matrix = error.outerProduct(activations.getx(-2))
+        fun updateWeightDecs(layer: Int) {
+            weightDecs.getx(layer).matrix = error.outerProduct(activations.getx(layer - 1))
+        }
+        updateWeightDecs(-1)
 
         val biasDecs = biases.map { it.zero() }
-        biasDecs.getx(-1).matrix = error.toRealMatrix()
+        fun updateBiasDecs(layer: Int) {
+            biasDecs.getx(layer).matrix = error.toRealMatrix()
+        }
+        updateBiasDecs(-1)
 
         for (layer in -2 downTo -weightDecs.size) {
             val ad = activateDerivative(weightedInputs.getx(layer))
             error = weights.getx(layer + 1).matrix.transpose() * error * ad
-            weightDecs.getx(layer).matrix = error.outerProduct(activations.getx(layer - 1))
-            biasDecs.getx(layer).matrix = error.toRealMatrix()
+            updateWeightDecs(layer)
+            updateBiasDecs(layer)
         }
 
         return Gradient(weightDecs, biasDecs)
