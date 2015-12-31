@@ -132,7 +132,7 @@ class NeuralNetwork(
     }
 
     private fun sigmoid(z: RealVector): RealVector {
-        return 1.0 / exp(-z) + 1.0
+        return 1.0 / (1.0 + exp(-z))
     }
 
     private data class Gradient(
