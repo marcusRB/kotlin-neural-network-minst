@@ -19,6 +19,8 @@ fun <T> Collection<T>.split(batchSize: Int): List<List<T>> {
     return result;
 }
 
+operator fun <T> List<T>.get(index: Int) = this.getx(index)
+
 fun <T> List<T>.getx(index: Int): T {
     val i = xindex(index)
     return this[i]

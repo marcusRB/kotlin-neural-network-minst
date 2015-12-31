@@ -7,8 +7,8 @@ fun main(args: Array<String>) {
     val trainingData = readMnistTrainingData(mnistFolder)
     val testData = readMnistTestData(mnistFolder)
 
-    val nn = NeuralNetwork(listOf(784, 30, 10), 3.0)
-    nn.train(trainingData.map { it.toLabeledData() }.toArrayList(), 30, 10)
+    val nn = NeuralNetwork(layerSizes = listOf(784, 30, 10), learningRate = 3.0)
+    nn.train(trainingData.map { it.toLabeledData() }.toArrayList(), epochs = 60, miniBatchSize = 10)
     println("nn: $nn")
 
     val failures = ArrayList<Pair<LabeledDigitImage, Byte>>()
@@ -20,8 +20,8 @@ fun main(args: Array<String>) {
     }
     println("Success rate: ${1 - failures.size.toDouble() / testData.size}")
 
-    for ((labeledDigitImage, predication) in failures) {
-        println("Actual: ${labeledDigitImage.label}")
+    for ((labeledDigitImage, predication) in failures.take(3)) {
+        println("Actual: ${labeledDigitImage.label}, predication: $predication")
         showImage(labeledDigitImage.data.toBufferedImage())
     }
 }

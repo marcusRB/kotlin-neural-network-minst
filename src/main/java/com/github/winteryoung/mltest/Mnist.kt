@@ -4,11 +4,14 @@ import java.awt.Canvas
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.awt.image.BufferedImage
 import java.io.DataInputStream
 import java.io.FileInputStream
 import java.nio.file.Paths
 import java.util.*
+import java.util.concurrent.Semaphore
 import javax.swing.JFrame
 import javax.swing.SwingUtilities
 
@@ -93,10 +96,20 @@ fun showImage(image: BufferedImage, width: Int = 300, height: Int = 300) {
     val win = JFrame().apply {
         add(canvas)
         pack()
-        defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
     }
 
-    SwingUtilities.invokeLater {
+    SwingUtilities.invokeAndWait {
         win.isVisible = true
     }
+
+    val sem = Semaphore(1)
+
+    win.addWindowListener(object : WindowAdapter() {
+        override fun windowClosed(e: WindowEvent?) {
+            sem.release()
+        }
+    })
+
+    sem.acquire()
 }
