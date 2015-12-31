@@ -28,17 +28,12 @@ fun readMnistImageFile(path: String): List<Image> {
         val imageHeight = dis.readInt()
         val imageWidth = dis.readInt()
 
-        fun genRgb(grayScale: Int): Int = (255 - grayScale).let {
-            Color(it, it, it).rgb
-        }
-
         return ArrayList<Image>().apply {
             for (i in 1..imageNumber) {
                 val data = IntArray(imageWidth * imageHeight)
                 for (h in 0..imageHeight - 1) {
                     for (w in 0..imageWidth - 1) {
-                        val rgb = genRgb(dis.readUnsignedByte())
-                        data[h * imageWidth + w] = rgb
+                        data[h * imageWidth + w] = dis.readUnsignedByte()
                     }
                 }
                 add(Image(imageWidth, imageHeight, data))

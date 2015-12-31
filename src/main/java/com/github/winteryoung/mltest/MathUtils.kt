@@ -64,3 +64,5 @@ operator fun RealMatrix.times(vec: RealVector) = this.multiply(vec.toRealMatrix(
 operator fun RealMatrix.minus(m: RealMatrix) = this.subtract(m)
 
 operator fun RealMatrix.times(d: Double) = this.scalarMultiply(d)
+
+operator fun RealMatrix.plus(m: RealMatrix) = this.add(m)

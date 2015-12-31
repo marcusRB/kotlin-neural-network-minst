@@ -58,19 +58,19 @@ class NeuralNetwork(
         for (labeledData in batch) {
             val (weightDecs, biasDecs) = backPropagate(labeledData)
             for ((wdb, wd) in weightDecsOfBatch.zip(weightDecs)) {
-                wdb.matrix = wdb.matrix.add(wd.matrix)
+                wdb.matrix += wd.matrix
             }
             for ((bdb, bd) in biasDecsOfBatch.zip(biasDecs)) {
-                bdb.matrix = bdb.matrix.add(bd.matrix)
+                bdb.matrix += bd.matrix
             }
         }
 
         val learningRateOfBatch = learningRate / batch.size
         for ((w, wd) in weights.zip(weightDecsOfBatch)) {
-            w.matrix = w.matrix - (wd.matrix * learningRateOfBatch)
+            w.matrix -= wd.matrix * learningRateOfBatch
         }
         for ((b, bd) in biases.zip(biasDecsOfBatch)) {
-            b.matrix = b.matrix.subtract(bd.matrix.scalarMultiply(learningRateOfBatch))
+            b.matrix -= bd.matrix * learningRateOfBatch
         }
     }
 
@@ -112,30 +112,6 @@ class NeuralNetwork(
         }
 
         return Gradient(weightDecs, biasDecs)
-    }
-
-    private fun gradientDecApprox(input: RealVector, actual: RealVector): List<RealVector> {
-        val delta = 0.0001
-        var nn = copy(-delta, 0.0)
-
-        fun cost() = nn.cost(predict(input), actual)
-
-        val w1 = cost()
-
-        nn = copy(delta, 0.0)
-        val w2 = cost()
-
-        nn = copy(0.0, -delta)
-        val b1 = cost()
-
-        nn = copy(0.0, delta)
-        val b2 = cost()
-
-        return listOf((w2 - w1) / (2 * delta), (b2 - b1) / (2 * delta))
-    }
-
-    private fun cost(activation: RealVector, actual: RealVector): RealVector {
-        return 0.5 * (activation - actual).pow(2.0)
     }
 
     private fun costDerivative(activation: RealVector, actual: RealVector): RealVector {
