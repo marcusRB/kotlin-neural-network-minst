@@ -24,15 +24,30 @@ fun <T> List<T>.getx(index: Int): T {
     return this[i]
 }
 
-private fun <T> List<T>.xindex(index: Int): Int {
+fun xindex(index: Int, size: Int): Int {
     val i = if (index < 0) {
-        this.size + index
+        size + index
     } else {
         index
     }
     return i
 }
 
+private fun <T> List<T>.xindex(index: Int): Int = xindex(index, size)
+
 fun <T> MutableList<T>.setx(index: Int, value: T) {
     this[xindex(index)] = value
 }
+
+private fun doubleIsDifferent(d1: Double, d2: Double, delta: Double): Boolean {
+    if (java.lang.Double.compare(d1, d2) == 0) {
+        return false
+    }
+    if (Math.abs(d1 - d2) <= delta) {
+        return false
+    }
+
+    return true
+}
+
+fun Double.equals(d: Double, delta: Double) = !doubleIsDifferent(this, d, delta)

@@ -16,19 +16,6 @@ fun RealVector.toRealMatrix(): RealMatrix {
     return MatrixUtils.createRealMatrix(ar)
 }
 
-fun RealMatrix.copy(delta: Double): RealMatrix {
-    if (delta == 0.0) {
-        return copy()
-    }
-    return copy().apply {
-        for (row in 0..rowDimension - 1) {
-            for (col in 0..columnDimension - 1) {
-                this.setEntry(row, col, getEntry(row, col) + delta)
-            }
-        }
-    }
-}
-
 operator fun RealVector.plus(vec: RealVector) = this.add(vec)
 
 operator fun RealVector.plus(d: Double) = this.mapAdd(d)
@@ -49,10 +36,6 @@ operator fun RealVector.times(v: Double) = this.mapMultiply(v)
 
 operator fun Double.times(vec: RealVector) = vec * this
 
-fun RealVector.pow(v: Double) = this.map { Math.pow(it, v) }
-
-fun Double.pow(vec: RealVector) = vec.map { Math.pow(this, it) }
-
 fun exp(vec: RealVector) = vec.map { Math.exp(it) }
 
 operator fun Double.div(vec: RealVector) = vec.map { this / it }
@@ -65,4 +48,10 @@ operator fun RealMatrix.minus(m: RealMatrix) = this.subtract(m)
 
 operator fun RealMatrix.times(d: Double) = this.scalarMultiply(d)
 
+operator fun RealMatrix.times(m: RealMatrix) = this.multiply(m)
+
 operator fun RealMatrix.plus(m: RealMatrix) = this.add(m)
+
+fun RealVector.pow(v: Double) = this.map { Math.pow(it, v) }
+
+fun Double.pow(vec: RealVector) = vec.map { Math.pow(this, it) }

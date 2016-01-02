@@ -20,9 +20,13 @@ class WeightMatrix(var matrix: RealMatrix) {
 
     fun zero() = WeightMatrix(MatrixUtils.createRealMatrix(matrix.rowDimension, matrix.columnDimension))
 
-    fun copy(delta: Double): WeightMatrix {
-        return WeightMatrix(matrix.copy(delta))
+    fun copyWithNeuronPerturbed(epsilon: Double, neuron: Int, previousLayerNeuron: Int): WeightMatrix {
+        return WeightMatrix(matrix.copy().apply {
+            setEntry(neuron, previousLayerNeuron, getEntry(neuron, previousLayerNeuron) + epsilon)
+        })
     }
+
+    fun copy() = WeightMatrix(matrix.copy())
 
     companion object {
         private fun createMatrix(height: Int, width: Int, valueInitializer: () -> Double): RealMatrix {

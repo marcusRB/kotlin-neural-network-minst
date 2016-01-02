@@ -21,9 +21,13 @@ class BiasVector(var matrix: RealMatrix) {
         return matrix.toString()
     }
 
-    fun copy(delta: Double): BiasVector {
-        return BiasVector(matrix.copy(delta))
+    fun copyWithNeuronPerturbed(epsilon: Double, neuron: Int): BiasVector {
+        return BiasVector(matrix.copy().apply {
+            setEntry(neuron, 0, getEntry(neuron, 0) + epsilon)
+        })
     }
+
+    fun copy() = BiasVector(matrix.copy())
 
     fun zero() = BiasVector(MatrixUtils.createRealMatrix(matrix.rowDimension, matrix.columnDimension))
 
