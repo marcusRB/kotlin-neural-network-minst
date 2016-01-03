@@ -1,6 +1,7 @@
 package com.github.winteryoung.mltest
 
 import java.util.*
+import kotlin.concurrent.getOrSet
 
 /**
  * @author Winter Young
@@ -8,21 +9,18 @@ import java.util.*
  */
 object TraceEnv {
     private val env = ThreadLocal<Stack<String>>()
-
-    init {
-        env.set(Stack<String>())
-    }
+    private val stack = env.getOrSet({ Stack<String>() })
 
     fun push(s: String) {
-        env.get().push(s)
+        stack.push(s)
     }
 
     fun pop(): String {
-        return env.get().pop()
+        return stack.pop()
     }
 
     override fun toString(): String {
-        return env.get().joinToString(", ")
+        return stack.joinToString(", ")
     }
 
     fun <R> use(str: String, action: () -> R): R {

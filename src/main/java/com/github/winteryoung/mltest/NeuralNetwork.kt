@@ -6,32 +6,40 @@ import org.apache.commons.math3.distribution.NormalDistribution
 import org.apache.commons.math3.linear.RealMatrix
 import org.apache.commons.math3.linear.RealVector
 import java.util.*
+import java.util.concurrent.ForkJoinPool
 
 /**
  * @author Winter Young
  * @since 2015/12/19
  */
-class NeuralNetwork(
+class NeuralNetwork private constructor(
         private val weights: List<WeightMatrix>,
         private val biases: List<BiasVector>,
         private val learningRate: Double,
         private val gradientChecking: Boolean = false,
-        private val debugging: Boolean= false
+        private val debugging: Boolean = false
 ) {
     constructor(
             layerSizes: List<Int>,
             learningRate: Double
     ) : this(createWeights(layerSizes), createBiases(layerSizes), learningRate)
 
+    init {
+        if (weights.size < 2) {
+            throw Exception("Layer size at least is 3, but is ${weights.size}")
+        }
+    }
+
     val layerSize = weights.size + 1
     private val sigmoidFunction = Sigmoid()
+    private val forkJoinPool = ForkJoinPool(Runtime.getRuntime().availableProcessors())
 
     override fun toString(): String {
         return "biases =\n${biases.joinToString("\n")}\n" +
                 "weights =\n${weights.joinToString("\n")}"
     }
 
-    fun copyWithWeightOfNeuronPerturbed(
+    private fun copyWithWeightOfNeuronPerturbed(
             epsilon: Double,
             layer: Int,
             neuron: Int,
@@ -53,7 +61,7 @@ class NeuralNetwork(
         )
     }
 
-    fun copyWithBiasOfNeuronPerturbed(delta: Double, layer: Int, neuron: Int): NeuralNetwork {
+    private fun copyWithBiasOfNeuronPerturbed(delta: Double, layer: Int, neuron: Int): NeuralNetwork {
         if (layer < 1 || layer > biases.size) {
             throw IndexOutOfBoundsException("layer: $layer, max: ${biases.size}")
         }
@@ -88,11 +96,21 @@ class NeuralNetwork(
                 println("Training epoch $epoch")
             }
 
-            Collections.shuffle(trainingData)
+            trainingData.shuffle()
 
             trainingData.split(miniBatchSize).forEachIndexed { batchIndex, batch ->
                 TraceEnv.use("batch: $batchIndex") {
-                    updateMiniBatch(batch, learningRate)
+                    val forkJoinTask = DataForkJoinTask(batch, weights, biases) { work ->
+                        trainMiniBatch(work)
+                    }
+                    val (weightDecs, biasDecs) = forkJoinPool.invoke(forkJoinTask)
+                    val learningRateOfBatch = learningRate / batch.size
+                    for ((w, wd) in weights.zip(weightDecs)) {
+                        w.matrix -= wd.matrix * learningRateOfBatch
+                    }
+                    for ((b, bd) in biases.zip(biasDecs)) {
+                        b.matrix -= bd.matrix * learningRateOfBatch
+                    }
                 }
             }
 
@@ -100,7 +118,7 @@ class NeuralNetwork(
         }
     }
 
-    private fun updateMiniBatch(batch: List<LabeledData>, learningRate: Double) {
+    private fun trainMiniBatch(batch: List<LabeledData>): Pair<List<WeightMatrix>, List<BiasVector>> {
         val weightDecsOfBatch = weights.map { it.zero() }
         val biasDecsOfBatch = biases.map { it.zero() }
         batch.forEachIndexed { i, labeledData ->
@@ -119,14 +137,7 @@ class NeuralNetwork(
                 }
             }
         }
-
-        val learningRateOfBatch = learningRate / batch.size
-        for ((w, wd) in weights.zip(weightDecsOfBatch)) {
-            w.matrix -= wd.matrix * learningRateOfBatch
-        }
-        for ((b, bd) in biases.zip(biasDecsOfBatch)) {
-            b.matrix -= bd.matrix * learningRateOfBatch
-        }
+        return Pair(weightDecsOfBatch, biasDecsOfBatch)
     }
 
     private fun checkLayer(
@@ -233,6 +244,7 @@ class NeuralNetwork(
         fun updateWeightDecs(layer: Int) {
             weightDecs.getx(layer).matrix = error!!.outerProduct(activations.getx(layer - 1))
         }
+
         val biasDecs = biases.map { it.zero() }
         fun updateBiasDecs(layer: Int) {
             biasDecs.getx(layer).matrix = error!!.toRealMatrix()

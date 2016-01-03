@@ -51,3 +51,7 @@ private fun doubleIsDifferent(d1: Double, d2: Double, delta: Double): Boolean {
 }
 
 fun Double.equals(d: Double, delta: Double) = !doubleIsDifferent(this, d, delta)
+
+fun <T> MutableList<T>.shuffle() {
+    Collections.shuffle(this)
+}
