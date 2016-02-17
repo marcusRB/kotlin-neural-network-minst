@@ -1,1 +1,1 @@
-This is a sample project of MINST handwritten digit recognition, written in Kotlin.
+This is a MINST handwritten digit recognition sample project written in Kotlin.
